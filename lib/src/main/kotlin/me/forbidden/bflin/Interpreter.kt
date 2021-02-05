@@ -25,8 +25,87 @@
 
 package me.forbidden.bflin
 
-class Interpreter {
-    fun someLibraryMethod(): Boolean {
-        return true
+class Interpreter(code: String, var input: String = "") {
+
+    val code = code.toCharArray()
+    val tape = ByteArray(30000)
+    var pointer = 0
+        private set
+    var inputPointer = 0
+        private set
+    var output = ""
+        private set
+
+    fun run() {
+        var unmatchedBrackets = 0
+        var index = 0
+        while (index < code.size) {
+            when (code[index]) {
+                '>' -> {
+                    if (pointer == 29999)
+                        pointer = 0
+                    else
+                        pointer++
+
+                }
+                '<' -> {
+                    if (pointer == 0)
+                        pointer = 29999
+                    else
+                        pointer--
+                }
+                '+' -> {
+                    if (tape[pointer] == 255.toByte())
+                        tape[pointer] = 0.toByte()
+                    else
+                        tape[pointer]++
+                }
+                '-' -> {
+                    if (tape[pointer] == 0.toByte())
+                        tape[pointer] = 255.toByte()
+                    else
+                        tape[pointer]--
+                }
+                ',' -> {
+                    tape[pointer] = input[inputPointer].toByte()
+                    inputPointer++
+                    if (inputPointer == input.length)
+                        inputPointer = 0
+                }
+                '.' -> {
+                    output += tape[pointer].toChar()
+                }
+                '[' -> {
+                    if (tape[pointer] == 0.toByte()) {
+                        unmatchedBrackets++
+                        while (code[index] != ']' || unmatchedBrackets != 0) {
+                            index++
+
+                            if (code[index] == '[') {
+                                unmatchedBrackets++
+                            } else if (code[index] == ']') {
+                                unmatchedBrackets--
+                            }
+                        }
+                    }
+                }
+                ']' -> {
+                    if (tape[pointer] != 0.toByte()) {
+                        unmatchedBrackets++
+                        while (code[index] != '[' || unmatchedBrackets != 0) {
+                            index--
+
+                            if (code[index] == ']') {
+                                unmatchedBrackets++
+                            } else if (code[index] == '[') {
+                                unmatchedBrackets--
+                            }
+                        }
+                    }
+                }
+            }
+            index++
+        }
     }
+
 }
